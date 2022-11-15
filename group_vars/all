@@ -1,0 +1,17 @@
+# ngix
+virtualhosts:
+  - name: pagina1
+    datos:
+      nameserver: pagina1.org
+      documentroot: /srv/www/pagina1
+      errorlog: error_pagina1
+      accesslog: access_pagina1
+  - name: pagina2
+    datos:
+      nameserver: pagina2.org
+      documentroot: /srv/www/pagina2
+      errorlog: error_pagina2
+      accesslog: access_pagina2
+
+del_virtualhost:
+  - name: pagina2

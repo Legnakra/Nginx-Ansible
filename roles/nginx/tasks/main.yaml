@@ -1,0 +1,63 @@
+- name: Install nginx
+  apt:
+    pkg: nginx
+
+- name: Virtualhost configuration
+  template:
+    src: etc/nginx/sites-available/vhost.j2
+    dest: /etc/nginx/sites-available/{{ item["name"] }}.conf
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - "{{ virtualhosts }}"
+
+- name: Create documentroot if it does not exist
+  ansible.builtin.file:
+    path: /{{ item["datos"]["documentroot"] }}
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+  with_items:
+    - "{{ virtualhosts }}"
+
+- name: Enable vhost
+  file:
+    src: /etc/nginx/sites-available/{{ item["name"] }}.conf
+    dest: /etc/nginx/sites-enabled/{{ item["name"] }}.conf
+    state: link
+    mode: 0755
+  with_items:
+    - "{{ virtualhosts }}"
+
+- name: Copy index.html
+  copy:
+    src: index_{{ item["name"] }}.html
+    dest: /{{item["datos"]["documentroot"]}}/index.html
+    owner: www-data
+    group: www-data
+    mode: 0644
+  with_items:
+    - "{{ virtualhosts }}"
+
+- name: Copy nuevodirectorio
+  copy:
+    src: nuevodirectorio
+    dest: /{{ item["datos"]["documentroot"] }}/
+    owner: www-data
+    group: www-data
+    mode: 0644
+  with_items:
+    - "{{ virtualhosts }}"
+  notify:
+    - restart nginx
+
+- name: Delete vhost pagina2
+  file:
+    path: /etc/nginx/sites-enabled/{{ item["name"] }}.conf
+    state: absent
+  with_items:
+    - "{{ del_virtualhost }}"
+  notify:
+    - restart nginx
